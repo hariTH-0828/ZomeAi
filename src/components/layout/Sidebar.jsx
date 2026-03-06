@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { SquarePen, ChevronDown, Edit2, Trash2, Check, X, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import UserAvatar from '../common/UserAvatar';
 import { useAuth } from '../../hooks/useAuth';
+import { deleteChat, updateChatTitle } from '../../services/chatService';
 
 const Sidebar = ({ historyItems, setHistoryItems, activeChat, setActiveChat, handleCreateNewChat, user }) => {
     const { logout } = useAuth();
     const [editingId, setEditingId] = useState(null);
     const [editTitle, setEditTitle] = useState("");
+    const [showLogoutAlert, setShowLogoutAlert] = useState(false);
 
     const handleCreate = () => {
         handleCreateNewChat();
@@ -17,6 +20,11 @@ const Sidebar = ({ historyItems, setHistoryItems, activeChat, setActiveChat, han
         e.stopPropagation();
         setHistoryItems(historyItems.filter(item => item.id !== id));
         if (activeChat?.id === id) setActiveChat(null);
+
+        // Delete from Firestore
+        if (user?.uid) {
+            deleteChat(user.uid, id).catch(console.error);
+        }
     };
 
     const startEdit = (item, e) => {
@@ -31,6 +39,15 @@ const Sidebar = ({ historyItems, setHistoryItems, activeChat, setActiveChat, han
             setHistoryItems(historyItems.map(item =>
                 item.id === editingId ? { ...item, title: editTitle } : item
             ));
+            // Also update activeChat if this is the currently active chat
+            if (activeChat?.id === editingId) {
+                setActiveChat({ ...activeChat, title: editTitle });
+            }
+
+            // Persist rename to Firestore
+            if (user?.uid) {
+                updateChatTitle(user.uid, editingId, editTitle).catch(console.error);
+            }
         }
         setEditingId(null);
     };
@@ -152,7 +169,7 @@ const Sidebar = ({ historyItems, setHistoryItems, activeChat, setActiveChat, han
                         <span className="text-xs text-slate-400 dark:text-slate-500 truncate">{user?.email || ''}</span>
                     </div>
                     <button
-                        onClick={logout}
+                        onClick={() => setShowLogoutAlert(true)}
                         className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors shrink-0 cursor-pointer"
                         title="Sign out"
                     >
@@ -160,6 +177,53 @@ const Sidebar = ({ historyItems, setHistoryItems, activeChat, setActiveChat, han
                     </button>
                 </div>
             </div>
+
+            {/* Logout Confirmation Modal - Portal to body */}
+            {createPortal(
+                <AnimatePresence>
+                    {showLogoutAlert && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100]"
+                            onClick={() => setShowLogoutAlert(false)}
+                        >
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                transition={{ type: 'spring', duration: 0.3 }}
+                                className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 w-[340px] mx-4"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="flex flex-col items-center text-center">
+                                    <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
+                                        <LogOut className="w-6 h-6 text-red-500" />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-1">Sign out</h3>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Are you sure you want to sign out of your account?</p>
+                                    <div className="flex w-full gap-3">
+                                        <button
+                                            onClick={() => setShowLogoutAlert(false)}
+                                            className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={() => { setShowLogoutAlert(false); logout(); }}
+                                            className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors cursor-pointer active:scale-95"
+                                        >
+                                            Sign out
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
         </div>
     );
 };

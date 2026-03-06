@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import MessageList from './MessageList';
 import ChatInput from './ChatInput';
 import { chatCompletion } from '../../services/api';
+import { saveChat } from '../../services/chatService';
 
 const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setActiveChat, user }) => {
     const [messages, setMessages] = useState(activeChat?.messages || []);
@@ -33,6 +34,11 @@ const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setA
                         }
                         return [updatedChat, ...prev];
                     });
+
+                    // Persist to Firestore
+                    if (user?.uid) {
+                        saveChat(user.uid, { ...updatedChat, model: activeModel }).catch(console.error);
+                    }
 
                 } catch (e) {
                     setMessages(prev => [...prev, { role: 'assistant', content: 'Error: ' + e.message }]);
@@ -73,6 +79,11 @@ const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setA
             setHistoryItems(prev => {
                 return prev.map(c => c.id === activeChat.id ? finalChat : c);
             });
+
+            // Persist to Firestore
+            if (user?.uid) {
+                saveChat(user.uid, { ...finalChat, model: activeModel }).catch(console.error);
+            }
 
         } catch (e) {
             setMessages(prev => [...prev, { role: 'assistant', content: 'Error: ' + e.message }]);

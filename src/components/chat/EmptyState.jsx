@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Image as ImageIcon, Code2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { saveChat } from '../../services/chatService';
 
 const EmptyState = ({ activeModel, setActiveChat, user }) => {
     const [attachOpen, setAttachOpen] = useState(false);
@@ -31,22 +32,23 @@ const EmptyState = ({ activeModel, setActiveChat, user }) => {
 
     const handleSend = () => {
         if (!inputValue.trim() || !setActiveChat) return;
-        setActiveChat({
+        const newChat = {
             id: Date.now(),
-            title: inputValue.slice(0, 20) + "...",
+            title: inputValue.slice(0, 30),
+            model: activeModel,
             messages: [{ role: "user", content: inputValue }]
-        });
+        };
+        setActiveChat(newChat);
+
+        // Persist to Firestore
+        if (user?.uid) {
+            saveChat(user.uid, newChat).catch(console.error);
+        }
     };
 
     return (
         <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white dark:bg-[#0f1117] transition-colors relative h-full">
             <div className="flex flex-col items-center justify-center max-w-2xl w-full flex-1 -mt-20">
-                <div className="w-12 h-12 rounded-full bg-[#E8E6FC] dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-6 font-bold text-lg select-none">
-                    {activeModel ? activeModel.charAt(0) : 'Q'}
-                </div>
-                <div className="text-slate-500 dark:text-slate-400 font-medium mb-8">
-                    {activeModel}
-                </div>
                 <h1 className="text-4xl md:text-5xl font-semibold text-slate-800 dark:text-slate-100 tracking-tight text-center mb-12">
                     {user?.displayName ? `Hi ${user.displayName.split(' ')[0]}, how can I help?` : 'Good to see you here.'}
                 </h1>
@@ -55,7 +57,7 @@ const EmptyState = ({ activeModel, setActiveChat, user }) => {
 
                     {/* Hidden file inputs */}
                     <input type="file" ref={mediaInputRef} className="hidden" accept="image/*,video/*" multiple />
-                    <input type="file" ref={fileInputRef} className="hidden" accept=".js,.jsx,.ts,.tsx,.json,.md,.html,.css,.py,.txt" multiple />
+                    <input type="file" ref={fileInputRef} className="hidden" accept=".js,.jsx,.ts,.tsx,.json,.md,.html,.css,.py,.txt,.java,.swift,.kt,.c,.cpp,.cs,.go,.rb,.php,.rs,.scala,.sh,.bash,.zsh,.fish,.ksh,.csh" multiple />
 
                     <div className="relative" ref={attachRef}>
                         <button
