@@ -3,7 +3,7 @@ import { Send, Image as ImageIcon, Code2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { saveChat } from '../../services/chatService';
 
-const EmptyState = ({ activeModel, setActiveChat, user }) => {
+const EmptyState = ({ activeModel, setActiveChat, setHistoryItems, user }) => {
     const [attachOpen, setAttachOpen] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const attachRef = useRef(null);
@@ -40,9 +40,16 @@ const EmptyState = ({ activeModel, setActiveChat, user }) => {
         };
         setActiveChat(newChat);
 
+        // Add to sidebar history immediately
+        if (setHistoryItems) {
+            setHistoryItems(prev => [newChat, ...prev]);
+        }
+
         // Persist to Firestore
         if (user?.uid) {
-            saveChat(user.uid, newChat).catch(console.error);
+            saveChat(user.uid, newChat).catch((err) => {
+                console.error('Failed to save new chat:', err);
+            });
         }
     };
 

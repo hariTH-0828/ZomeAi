@@ -23,7 +23,9 @@ const Sidebar = ({ historyItems, setHistoryItems, activeChat, setActiveChat, han
 
         // Delete from Firestore
         if (user?.uid) {
-            deleteChat(user.uid, id).catch(console.error);
+            deleteChat(user.uid, id).catch((err) => {
+                console.error('Failed to delete chat:', err);
+            });
         }
     };
 
@@ -46,7 +48,9 @@ const Sidebar = ({ historyItems, setHistoryItems, activeChat, setActiveChat, han
 
             // Persist rename to Firestore
             if (user?.uid) {
-                updateChatTitle(user.uid, editingId, editTitle).catch(console.error);
+                updateChatTitle(user.uid, editingId, editTitle).catch((err) => {
+                    console.error('Failed to rename chat:', err);
+                });
             }
         }
         setEditingId(null);

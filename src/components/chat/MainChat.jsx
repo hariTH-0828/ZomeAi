@@ -37,7 +37,9 @@ const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setA
 
                     // Persist to Firestore
                     if (user?.uid) {
-                        saveChat(user.uid, { ...updatedChat, model: activeModel }).catch(console.error);
+                        saveChat(user.uid, { ...updatedChat, model: activeModel }).catch((err) => {
+                            console.error('Failed to save chat after AI response:', err);
+                        });
                     }
 
                 } catch (e) {
@@ -82,7 +84,9 @@ const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setA
 
             // Persist to Firestore
             if (user?.uid) {
-                saveChat(user.uid, { ...finalChat, model: activeModel }).catch(console.error);
+                saveChat(user.uid, { ...finalChat, model: activeModel }).catch((err) => {
+                    console.error('Failed to save chat:', err);
+                });
             }
 
         } catch (e) {
