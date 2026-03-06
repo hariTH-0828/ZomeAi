@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Image as ImageIcon, Code2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const EmptyState = ({ activeModel, setActiveChat }) => {
+const EmptyState = ({ activeModel, setActiveChat, user }) => {
     const [attachOpen, setAttachOpen] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const attachRef = useRef(null);
@@ -48,7 +48,7 @@ const EmptyState = ({ activeModel, setActiveChat }) => {
                     {activeModel}
                 </div>
                 <h1 className="text-4xl md:text-5xl font-semibold text-slate-800 dark:text-slate-100 tracking-tight text-center mb-12">
-                    Good to see you here.
+                    {user?.displayName ? `Hi ${user.displayName.split(' ')[0]}, how can I help?` : 'Good to see you here.'}
                 </h1>
 
                 <div className="w-full relative flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm rounded-full p-2 pl-4 transition-shadow focus-within:shadow-md focus-within:border-indigo-300 dark:focus-within:border-indigo-500">
@@ -60,7 +60,7 @@ const EmptyState = ({ activeModel, setActiveChat }) => {
                     <div className="relative" ref={attachRef}>
                         <button
                             onClick={() => setAttachOpen(!attachOpen)}
-                            className={`p-2 transition-colors shrink-0 rounded-full mr-2 ${attachOpen ? 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                            className={`p-2 transition-colors shrink-0 rounded-full mr-2 cursor-pointer ${attachOpen ? 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                         >
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -78,7 +78,7 @@ const EmptyState = ({ activeModel, setActiveChat }) => {
                                 >
                                     <button
                                         onClick={handleMediaClick}
-                                        className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"
+                                        className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors cursor-pointer"
                                     >
                                         <div className="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 p-1.5 rounded-md">
                                             <ImageIcon className="w-4 h-4" />
@@ -87,7 +87,7 @@ const EmptyState = ({ activeModel, setActiveChat }) => {
                                     </button>
                                     <button
                                         onClick={handleCodeClick}
-                                        className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"
+                                        className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors cursor-pointer"
                                     >
                                         <div className="bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400 p-1.5 rounded-md">
                                             <Code2 className="w-4 h-4" />
@@ -112,7 +112,7 @@ const EmptyState = ({ activeModel, setActiveChat }) => {
 
                     <button
                         onClick={handleSend}
-                        className="p-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition-colors w-12 h-12 flex items-center justify-center shadow-md ml-2 shrink-0"
+                        className="p-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition-all w-12 h-12 flex items-center justify-center shadow-md ml-2 shrink-0 cursor-pointer active:scale-90 hover:shadow-lg"
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="-ml-0.5 mt-0.5">
                             <line x1="22" y1="2" x2="11" y2="13"></line>

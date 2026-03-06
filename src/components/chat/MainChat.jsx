@@ -3,7 +3,7 @@ import MessageList from './MessageList';
 import ChatInput from './ChatInput';
 import { chatCompletion } from '../../services/api';
 
-const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setActiveChat }) => {
+const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setActiveChat, user }) => {
     const [messages, setMessages] = useState(activeChat?.messages || []);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -84,7 +84,7 @@ const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setA
     return (
         <div className="flex flex-col h-full w-full bg-transparent relative transition-colors">
             <div className="flex-1 overflow-hidden flex flex-col relative z-0">
-                <MessageList messages={messages} isLoading={isLoading} />
+                <MessageList messages={messages} isLoading={isLoading} user={user} />
                 <div className="shrink-0 relative z-10 w-full bg-gradient-to-t from-white via-white dark:from-[#0f1117] dark:via-[#0f1117] to-transparent pt-4">
                     <ChatInput onSend={handleSendMessage} isLoading={isLoading} />
                 </div>

@@ -45,7 +45,7 @@ function App() {
       models={models}
       user={user}
     >
-      {activeChat ? <MainChat historyItems={historyItems} setHistoryItems={setHistoryItems} activeChat={activeChat} activeModel={activeModel} setActiveChat={setActiveChat} /> : <EmptyState activeModel={activeModel} setActiveChat={setActiveChat} />}
+      {activeChat ? <MainChat historyItems={historyItems} setHistoryItems={setHistoryItems} activeChat={activeChat} activeModel={activeModel} setActiveChat={setActiveChat} user={user} /> : <EmptyState activeModel={activeModel} setActiveChat={setActiveChat} user={user} />}
     </MainLayout>
   );
 }

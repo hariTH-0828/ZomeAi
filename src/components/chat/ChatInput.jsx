@@ -47,7 +47,7 @@ const ChatInput = ({ onSend, isLoading }) => {
                     <div className="relative" ref={attachRef}>
                         <button
                             onClick={() => setAttachOpen(!attachOpen)}
-                            className={`p-1.5 transition-colors shrink-0 rounded-full ml-1 ${attachOpen ? 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                            className={`p-1.5 transition-colors shrink-0 rounded-full ml-1 cursor-pointer ${attachOpen ? 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                         >
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -65,7 +65,7 @@ const ChatInput = ({ onSend, isLoading }) => {
                                 >
                                     <button
                                         onClick={handleMediaClick}
-                                        className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"
+                                        className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors cursor-pointer"
                                     >
                                         <div className="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 p-1.5 rounded-md">
                                             <ImageIcon className="w-4 h-4" />
@@ -74,7 +74,7 @@ const ChatInput = ({ onSend, isLoading }) => {
                                     </button>
                                     <button
                                         onClick={handleCodeClick}
-                                        className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"
+                                        className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors cursor-pointer"
                                     >
                                         <div className="bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400 p-1.5 rounded-md">
                                             <Code2 className="w-4 h-4" />
@@ -102,7 +102,7 @@ const ChatInput = ({ onSend, isLoading }) => {
                         <button
                             onClick={handleSend}
                             disabled={isLoading}
-                            className={`p-2 rounded-full transition-colors w-10 h-10 flex items-center justify-center shadow-md text-white ${isLoading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                            className={`p-2 rounded-full transition-all w-10 h-10 flex items-center justify-center shadow-md text-white ${isLoading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer active:scale-90 hover:shadow-lg'}`}
                         >
                             <ArrowUp className="w-5 h-5" />
                         </button>

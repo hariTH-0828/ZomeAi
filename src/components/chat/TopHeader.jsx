@@ -1,14 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sun, Moon, ChevronDown, Check, LogOut } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
+import { Sun, Moon, ChevronDown, Check } from 'lucide-react';
 
-const TopHeader = ({ activeChat, activeModel, setActiveModel, models, user }) => {
-    const { logout } = useAuth();
+const TopHeader = ({ activeChat, activeModel, setActiveModel, models }) => {
     const [theme, setTheme] = useState('light');
     const [modelOpen, setModelOpen] = useState(false);
-    const [userMenuOpen, setUserMenuOpen] = useState(false);
     const dropdownRef = useRef(null);
-    const userMenuRef = useRef(null);
 
     useEffect(() => {
         if (theme === 'dark') {
@@ -23,9 +19,6 @@ const TopHeader = ({ activeChat, activeModel, setActiveModel, models, user }) =>
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setModelOpen(false);
             }
-            if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
-                setUserMenuOpen(false);
-            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -38,7 +31,7 @@ const TopHeader = ({ activeChat, activeModel, setActiveModel, models, user }) =>
                 <div className="relative" ref={dropdownRef}>
                     <button
                         onClick={() => setModelOpen(!modelOpen)}
-                        className="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 px-3 py-1.5 rounded-lg transition-colors"
+                        className="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 px-3 py-1.5 rounded-lg transition-colors cursor-pointer active:scale-95"
                     >
                         {activeModel}
                         <ChevronDown className="w-4 h-4 text-slate-400" />
@@ -50,7 +43,7 @@ const TopHeader = ({ activeChat, activeModel, setActiveModel, models, user }) =>
                                 <button
                                     key={model}
                                     onClick={() => { setActiveModel(model); setModelOpen(false); }}
-                                    className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex flex-row items-center justify-between transition-colors"
+                                    className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex flex-row items-center justify-between transition-colors cursor-pointer"
                                 >
                                     {model}
                                     {activeModel === model && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
@@ -64,44 +57,16 @@ const TopHeader = ({ activeChat, activeModel, setActiveModel, models, user }) =>
                     <div className="flex bg-slate-100 dark:bg-slate-800 rounded-full p-1 shadow-inner transition-colors">
                         <button
                             onClick={() => setTheme('light')}
-                            className={`p-1.5 rounded-full transition-all ${theme === 'light' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                            className={`p-1.5 rounded-full transition-all cursor-pointer ${theme === 'light' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                         >
                             <Sun className="w-4 h-4" />
                         </button>
                         <button
                             onClick={() => setTheme('dark')}
-                            className={`p-1.5 rounded-full transition-all ${theme === 'dark' ? 'bg-slate-700 text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                            className={`p-1.5 rounded-full transition-all cursor-pointer ${theme === 'dark' ? 'bg-slate-700 text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                         >
                             <Moon className="w-4 h-4" />
                         </button>
-                    </div>
-                    <div className="relative" ref={userMenuRef}>
-                        <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="block outline-none">
-                            <img
-                                src={user?.photoURL || "https://i.pravatar.cc/150?img=47"}
-                                alt="User Avatar"
-                                referrerPolicy="no-referrer"
-                                className="w-8 h-8 rounded-full ring-2 ring-white dark:ring-slate-800 shadow-sm object-cover transition-transform hover:scale-105"
-                            />
-                        </button>
-
-                        {userMenuOpen && (
-                            <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg py-1 z-50 overflow-hidden">
-                                <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700/50">
-                                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{user?.displayName || 'User'}</p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user?.email || 'No email'}</p>
-                                </div>
-                                <div className="p-1">
-                                    <button
-                                        onClick={() => { setUserMenuOpen(false); logout(); }}
-                                        className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:text-red-400 rounded-lg flex items-center gap-2 transition-colors"
-                                    >
-                                        <LogOut className="w-4 h-4" />
-                                        Sign out
-                                    </button>
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>

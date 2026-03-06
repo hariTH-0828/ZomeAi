@@ -13,8 +13,9 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import UserAvatar from '../common/UserAvatar';
 
-const MessageList = ({ messages = [], isLoading }) => {
+const MessageList = ({ messages = [], isLoading, user }) => {
     return (
         <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 no-scrollbar scroll-smooth transition-colors">
             <div className="max-w-4xl mx-auto space-y-8">
@@ -28,14 +29,10 @@ const MessageList = ({ messages = [], isLoading }) => {
                     >
                         {msg.role === 'user' ? (
                             <>
-                                <img
-                                    src="https://i.pravatar.cc/150?img=47"
-                                    alt="User"
-                                    className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white dark:ring-slate-800 shadow-sm"
-                                />
+                                <UserAvatar user={user} size="md" className="ring-2 ring-white dark:ring-slate-800 shadow-sm" />
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <span className="font-semibold text-slate-800 dark:text-slate-200">You</span>
+                                        <span className="font-semibold text-slate-800 dark:text-slate-200">{user?.displayName || 'You'}</span>
                                         <span className="text-xs text-slate-400 dark:text-slate-500">now</span>
                                     </div>
                                     <div className="bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 px-5 py-3.5 rounded-2xl rounded-tl-sm w-fit max-w-[85%] text-[15px] leading-relaxed shadow-sm border border-slate-100 dark:border-slate-700/50">
@@ -65,7 +62,7 @@ const MessageList = ({ messages = [], isLoading }) => {
                                                                 <span>{match[1]}</span>
                                                                 <button
                                                                     onClick={() => navigator.clipboard.writeText(String(children).replace(/\n$/, ''))}
-                                                                    className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors flex items-center gap-1.5"
+                                                                    className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer"
                                                                 >
                                                                     <Copy className="w-3.5 h-3.5" /> Copy
                                                                 </button>
@@ -103,10 +100,10 @@ const MessageList = ({ messages = [], isLoading }) => {
                                         </ReactMarkdown>
                                     </div>
                                     <div className="flex items-center gap-4 text-slate-400 dark:text-slate-500 ml-1 mt-3">
-                                        <button className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors"><Volume2 className="w-4 h-4" /></button>
-                                        <button className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors"><Copy className="w-4 h-4" /></button>
-                                        <button className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors"><RotateCcw className="w-4 h-4" /></button>
-                                        <button className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors"><ThumbsDown className="w-4 h-4" /></button>
+                                        <button className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><Volume2 className="w-4 h-4" /></button>
+                                        <button className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><Copy className="w-4 h-4" /></button>
+                                        <button className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><RotateCcw className="w-4 h-4" /></button>
+                                        <button className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><ThumbsDown className="w-4 h-4" /></button>
                                     </div>
                                 </div>
                             </>
