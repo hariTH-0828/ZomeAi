@@ -1,7 +1,7 @@
 import React from 'react';
 import { Home, User, Settings } from 'lucide-react';
 
-const LeftNav = () => {
+const LeftNav = ({ user }) => {
     return (
         <div className="group w-16 hover:w-56 h-full bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex flex-col py-4 flex-shrink-0 transition-all duration-300 overflow-hidden relative z-50">
             {/* Top Logo */}
@@ -34,8 +34,9 @@ const LeftNav = () => {
                 </button>
                 <button className="flex items-center p-2 rounded-xl hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors w-full group/btn mt-2">
                     <img
-                        src="https://i.pravatar.cc/150?img=47"
+                        src={user?.photoURL || "https://i.pravatar.cc/150?img=47"}
                         alt="User profile"
+                        referrerPolicy="no-referrer"
                         className="w-8 h-8 rounded-full object-cover shrink-0 ring-2 ring-transparent group-hover/btn:ring-slate-300 dark:group-hover/btn:ring-slate-700 transition-all"
                     />
                     <span className="ml-3 font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">Profile</span>

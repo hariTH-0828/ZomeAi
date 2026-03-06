@@ -1,0 +1,41 @@
+type User @table {
+  displayName: String!
+  createdAt: Timestamp!
+  email: String
+  photoUrl: String
+}
+
+type Model @table {
+  name: String!
+  identifier: String!
+  createdAt: Timestamp!
+  description: String
+  version: String
+  modelParameters: String
+}
+
+type ChatSession @table {
+  name: String!
+  createdAt: Timestamp!
+  updatedAt: Timestamp!
+  user: User!
+  model: Model!
+  description: String
+}
+
+type Message @table {
+  content: String!
+  role: String!
+  createdAt: Timestamp!
+  chatSession: ChatSession!
+  user: User
+  metadata: String
+}
+
+type Feedback @table {
+  rating: Int!
+  createdAt: Timestamp!
+  message: Message!
+  user: User!
+  comment: String
+}

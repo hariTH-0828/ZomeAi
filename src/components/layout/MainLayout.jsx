@@ -3,10 +3,10 @@ import LeftNav from './LeftNav';
 import Sidebar from './Sidebar';
 import TopHeader from '../chat/TopHeader';
 
-const MainLayout = ({ children, historyItems, setHistoryItems, activeChat, setActiveChat, handleCreateNewChat, activeModel, setActiveModel, models }) => {
+const MainLayout = ({ children, historyItems, setHistoryItems, activeChat, setActiveChat, handleCreateNewChat, activeModel, setActiveModel, models, user }) => {
     return (
         <div className="flex w-screen h-screen overflow-hidden bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors">
-            <LeftNav />
+            <LeftNav user={user} />
             <Sidebar
                 historyItems={historyItems}
                 setHistoryItems={setHistoryItems}
@@ -20,6 +20,7 @@ const MainLayout = ({ children, historyItems, setHistoryItems, activeChat, setAc
                     activeModel={activeModel}
                     setActiveModel={setActiveModel}
                     models={models}
+                    user={user}
                 />
                 <div className="flex-1 flex flex-col min-w-0 relative z-0 overflow-hidden">
                     {children}

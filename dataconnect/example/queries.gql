@@ -1,0 +1,51 @@
+query GetMyChatSessions @auth(level: USER, insecureReason: "This operation allows a logged-in user to view their own chat sessions.") {
+  chatSessions(where: {userId: {eq_expr: "auth.uid"}}, orderBy: [{createdAt: DESC}]) {
+    id
+    name
+    createdAt
+    description
+    model {
+      id
+      name
+      identifier
+    }
+  }
+}
+
+mutation CreateChatSession($name: String!, $modelId: UUID!, $description: String) @auth(level: USER) {
+  chatSession_insert(data: {
+    name: $name,
+    modelId: $modelId,
+    description: $description,
+    userId_expr: "auth.uid",
+    createdAt_expr: "request.time",
+    updatedAt_expr: "request.time"
+  }) {
+    id
+  }
+}
+
+mutation SendChatMessage($chatSessionId: UUID!, $content: String!, $role: String!, $metadata: String) @auth(level: USER) {
+  message_insert(data: {
+    chatSessionId: $chatSessionId,
+    content: $content,
+    role: $role,
+    userId_expr: "auth.uid",
+    createdAt_expr: "request.time",
+    metadata: $metadata
+  }) {
+    id
+  }
+}
+
+query GetModelDetails($modelId: UUID!) @auth(level: PUBLIC, insecureReason: "This operation allows anyone to view the details of a specific model.") {
+  model(id: $modelId) {
+    id
+    name
+    identifier
+    description
+    version
+    modelParameters
+    createdAt
+  }
+}

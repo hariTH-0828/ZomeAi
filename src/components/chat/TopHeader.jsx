@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sun, Moon, ChevronDown, Check } from 'lucide-react';
+import { Sun, Moon, ChevronDown, Check, LogOut } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
-const TopHeader = ({ activeChat, activeModel, setActiveModel, models }) => {
+const TopHeader = ({ activeChat, activeModel, setActiveModel, models, user }) => {
+    const { logout } = useAuth();
     const [theme, setTheme] = useState('light');
     const [modelOpen, setModelOpen] = useState(false);
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
     const dropdownRef = useRef(null);
+    const userMenuRef = useRef(null);
 
     useEffect(() => {
         if (theme === 'dark') {
@@ -18,6 +22,9 @@ const TopHeader = ({ activeChat, activeModel, setActiveModel, models }) => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setModelOpen(false);
+            }
+            if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+                setUserMenuOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -68,11 +75,34 @@ const TopHeader = ({ activeChat, activeModel, setActiveModel, models }) => {
                             <Moon className="w-4 h-4" />
                         </button>
                     </div>
-                    <img
-                        src="https://i.pravatar.cc/150?img=47"
-                        alt="User Avatar"
-                        className="w-8 h-8 rounded-full ring-2 ring-white dark:ring-slate-800 shadow-sm object-cover"
-                    />
+                    <div className="relative" ref={userMenuRef}>
+                        <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="block outline-none">
+                            <img
+                                src={user?.photoURL || "https://i.pravatar.cc/150?img=47"}
+                                alt="User Avatar"
+                                referrerPolicy="no-referrer"
+                                className="w-8 h-8 rounded-full ring-2 ring-white dark:ring-slate-800 shadow-sm object-cover transition-transform hover:scale-105"
+                            />
+                        </button>
+
+                        {userMenuOpen && (
+                            <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg py-1 z-50 overflow-hidden">
+                                <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700/50">
+                                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{user?.displayName || 'User'}</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user?.email || 'No email'}</p>
+                                </div>
+                                <div className="p-1">
+                                    <button
+                                        onClick={() => { setUserMenuOpen(false); logout(); }}
+                                        className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:text-red-400 rounded-lg flex items-center gap-2 transition-colors"
+                                    >
+                                        <LogOut className="w-4 h-4" />
+                                        Sign out
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 

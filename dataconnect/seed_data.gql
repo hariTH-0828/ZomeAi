@@ -1,0 +1,112 @@
+mutation CreateDemoData @transaction @auth(level: USER, insecureReason: "This operation is for seeding data and only accessible to authenticated users.") {
+  user_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      displayName: "Demo User 1",
+      email: "demo1@example.com",
+      createdAt: "2023-01-01T00:00:00Z",
+      photoUrl: "https://example.com/photo1.jpg"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440001",
+      displayName: "Demo User 2",
+      email: "demo2@example.com",
+      createdAt: "2023-01-02T00:00:00Z",
+      photoUrl: "https://example.com/photo2.jpg"
+    }
+  ])
+  model_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440002",
+      name: "Gemini Pro",
+      identifier: "gemini-pro",
+      createdAt: "2023-01-03T00:00:00Z",
+      description: "A powerful large language model.",
+      version: "1.0",
+      modelParameters: "{}"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440003",
+      name: "PaLM 2",
+      identifier: "palm2",
+      createdAt: "2023-01-04T00:00:00Z",
+      description: "Another advanced language model.",
+      version: "1.1",
+      modelParameters: "{}"
+    }
+  ])
+  chatSession_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440004",
+      name: "First Chat with Gemini",
+      createdAt: "2023-01-05T00:00:00Z",
+      updatedAt: "2023-01-05T00:00:00Z",
+      userId: "550e8400-e29b-41d4-a716-446655440000",
+      modelId: "550e8400-e29b-41d4-a716-446655440002",
+      description: "A chat session between Demo User 1 and Gemini Pro."
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440005",
+      name: "Second Chat with PaLM",
+      createdAt: "2023-01-06T00:00:00Z",
+      updatedAt: "2023-01-06T00:00:00Z",
+      userId: "550e8400-e29b-41d4-a716-446655440001",
+      modelId: "550e8400-e29b-41d4-a716-446655440003",
+      description: "A chat session between Demo User 2 and PaLM 2."
+    }
+  ])
+  message_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440006",
+      content: "Hello Gemini, how are you?",
+      role: "user",
+      createdAt: "2023-01-05T00:01:00Z",
+      chatSessionId: "550e8400-e29b-41d4-a716-446655440004",
+      userId: "550e8400-e29b-41d4-a716-446655440000",
+      metadata: "{}"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440007",
+      content: "I'm doing well, thank you for asking! How can I help you today?",
+      role: "model",
+      createdAt: "2023-01-05T00:02:00Z",
+      chatSessionId: "550e8400-e29b-41d4-a716-446655440004",
+      metadata: "{}"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440008",
+      content: "Hi PaLM, what's new?",
+      role: "user",
+      createdAt: "2023-01-06T00:01:00Z",
+      chatSessionId: "550e8400-e29b-41d4-a716-446655440005",
+      userId: "550e8400-e29b-41d4-a716-446655440001",
+      metadata: "{}"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440009",
+      content: "I'm constantly learning and improving!",
+      role: "model",
+      createdAt: "2023-01-06T00:02:00Z",
+      chatSessionId: "550e8400-e29b-41d4-a716-446655440005",
+      metadata: "{}"
+    }
+  ])
+  feedback_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440010",
+      rating: 5,
+      createdAt: "2023-01-05T00:03:00Z",
+      messageId: "550e8400-e29b-41d4-a716-446655440007",
+      userId: "550e8400-e29b-41d4-a716-446655440000",
+      comment: "Very helpful response from Gemini!"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440011",
+      rating: 4,
+      createdAt: "2023-01-06T00:03:00Z",
+      messageId: "550e8400-e29b-41d4-a716-446655440009",
+      userId: "550e8400-e29b-41d4-a716-446655440001",
+      comment: "Good to hear PaLM is improving."
+    }
+  ])
+}
