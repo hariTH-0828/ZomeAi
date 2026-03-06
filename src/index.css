@@ -1,0 +1,26 @@
+@import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-background: #ffffff;
+  --color-foreground: #111827;
+  --color-muted: #f3f4f6;
+  --color-muted-foreground: #6b7280;
+  --color-border: #e5e7eb;
+  --color-primary: #3b82f6;
+  --color-primary-foreground: #ffffff;
+  --color-ai-bubble: #f4f4f5;
+}
+
+@layer base {
+
+  html,
+  body {
+    @apply antialiased h-full w-full bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  #root {
+    @apply h-full w-full flex;
+  }
+}
