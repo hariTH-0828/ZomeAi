@@ -1,16 +1,49 @@
-# React + Vite
+# ZomeAi - HuggingFace Chat UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+ZomeAi is a modern, responsive React + Vite chat web application built to interface with various open-source AI models via the HuggingFace Router using the OpenAI SDK.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Sleek UI/UX:** Responsive design powered by Tailwind CSS and Framer Motion micro-animations.
+- **Model Switching:** Easily swap between supported AI models during chat sessions.
+- **Dark Mode Support:** Built-in Light/Dark mode toggling. 
+- **HuggingFace Router Integration:** Fully configured to consume models using your Hugging Face Token over the standardized OpenAI structure.
 
-## React Compiler
+## Currently Supported Models
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The frontend exposes the following user-friendly model aliases in the UI which map to precise HuggingFace endpoints:
+- `GPT-OSS (GROQ)` -> `openai/gpt-oss-120b:groq`
+- `Qwen 3.5` -> `Qwen/Qwen3.5-35B-A3B:novita`
+- `Kimi-K2.5` -> `moonshotai/Kimi-K2.5:novita`
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Prerequisites
+- Node.js (v18+ recommended)
+- A valid [Hugging Face Token](https://huggingface.co/settings/tokens)
+
+### Installation
+
+1. Clone or download this repository.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set up your environment variables. Create a `.env` file in the root of the project with your Hugging Face token:
+   ```env
+   VITE_HF_TOKEN=your_token_here
+   ```
+   *Note: If deploying to a Node.js backend environment in the future, the app is also configured to read `HF_TOKEN` from the shell process.*
+
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+## Tech Stack
+- React 19
+- Vite
+- Tailwind CSS v4
+- Framer Motion
+- Lucide React (Icons)
+- OpenAI Node SDK (for HuggingFace routing)
