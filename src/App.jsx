@@ -33,7 +33,7 @@ function App() {
   }, [user]);
 
   const handleCreateNewChat = () => {
-    setActiveChat({ id: Date.now(), title: "New Chat", messages: [] });
+    setActiveChat(null);
   };
 
   if (loading) {

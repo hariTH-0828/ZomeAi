@@ -96,10 +96,94 @@ const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setA
         }
     };
 
+    const handleEditMessage = async (index, newContent) => {
+        const editedMsg = { ...messages[index], content: newContent };
+        let newMessages = [...messages];
+
+        if (editedMsg.role === 'user') {
+            // Cut off history after this user message to resend
+            newMessages = messages.slice(0, index + 1);
+            newMessages[index] = editedMsg;
+            setMessages(newMessages);
+            setIsLoading(true);
+
+            // Update chat immediately
+            const updatedChatUser = { ...activeChat, messages: newMessages };
+            setActiveChat(updatedChatUser);
+            setHistoryItems(prev => prev.map(c => c.id === activeChat.id ? updatedChatUser : c));
+
+            try {
+                const apiMessages = newMessages.map(m => ({ role: m.role, content: m.content }));
+                const reply = await chatCompletion(apiMessages, activeModel);
+                const finalMessages = [...newMessages, { role: 'assistant', content: reply }];
+                setMessages(finalMessages);
+
+                const finalChat = { ...activeChat, messages: finalMessages };
+                setActiveChat(finalChat);
+
+                setHistoryItems(prev => prev.map(c => c.id === activeChat.id ? finalChat : c));
+
+                if (user?.uid) {
+                    saveChat(user.uid, { ...finalChat, model: activeModel }).catch(console.error);
+                }
+            } catch (e) {
+                setMessages(prev => [...prev, { role: 'assistant', content: 'Error: ' + e.message }]);
+            } finally {
+                setIsLoading(false);
+            }
+
+        } else {
+            // Just update the assistant message locally
+            newMessages[index] = editedMsg;
+            setMessages(newMessages);
+            const finalChat = { ...activeChat, messages: newMessages };
+            setActiveChat(finalChat);
+            setHistoryItems(prev => prev.map(c => c.id === activeChat.id ? finalChat : c));
+            if (user?.uid) {
+                saveChat(user.uid, { ...finalChat, model: activeModel }).catch(console.error);
+            }
+        }
+    };
+
+    const handleReloadMessage = async (index) => {
+        // Find the last user message BEFORE or AT this assistant message to regenerate from
+        // If the user regenerates an AI message, we slice the history up to the previous user message
+        const targetUserIndex = index - 1;
+        if (targetUserIndex < 0 || messages[targetUserIndex].role !== 'user') return;
+
+        let newMessages = messages.slice(0, targetUserIndex + 1);
+        setMessages(newMessages);
+        setIsLoading(true);
+
+        const updatedChatUser = { ...activeChat, messages: newMessages };
+        setActiveChat(updatedChatUser);
+        setHistoryItems(prev => prev.map(c => c.id === activeChat.id ? updatedChatUser : c));
+
+        try {
+            const apiMessages = newMessages.map(m => ({ role: m.role, content: m.content }));
+            const reply = await chatCompletion(apiMessages, activeModel);
+            const finalMessages = [...newMessages, { role: 'assistant', content: reply }];
+            setMessages(finalMessages);
+
+            const finalChat = { ...activeChat, messages: finalMessages };
+            setActiveChat(finalChat);
+
+            setHistoryItems(prev => prev.map(c => c.id === activeChat.id ? finalChat : c));
+
+            if (user?.uid) {
+                saveChat(user.uid, { ...finalChat, model: activeModel }).catch(console.error);
+            }
+        } catch (e) {
+            setMessages(prev => [...prev, { role: 'assistant', content: 'Error: ' + e.message }]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="flex flex-col h-full w-full bg-transparent relative transition-colors">
             <div className="flex-1 overflow-hidden flex flex-col relative z-0">
-                <MessageList messages={messages} isLoading={isLoading} user={user} />
+                <MessageList messages={messages} isLoading={isLoading} user={user} onEditSubmit={handleEditMessage} onReloadSubmit={handleReloadMessage} />
                 <div className="shrink-0 relative z-10 w-full bg-gradient-to-t from-white via-white dark:from-[#0f1117] dark:via-[#0f1117] to-transparent pt-4">
                     <ChatInput onSend={handleSendMessage} isLoading={isLoading} />
                 </div>

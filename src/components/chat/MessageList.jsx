@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     ChevronLeft,
     ChevronRight,
@@ -6,16 +6,44 @@ import {
     Copy,
     RotateCcw,
     ThumbsDown,
-    Settings2
+    Settings2,
+    Edit2
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import UserAvatar from '../common/UserAvatar';
 
-const MessageList = ({ messages = [], isLoading, user }) => {
+const MessageList = ({ messages = [], isLoading, user, onEditSubmit, onReloadSubmit }) => {
+    const [editingIndex, setEditingIndex] = useState(null);
+    const [editContent, setEditContent] = useState('');
+    const [showToast, setShowToast] = useState(false);
+
+    const startEdit = (index, content) => {
+        setEditingIndex(index);
+        setEditContent(content);
+    };
+
+    const cancelEdit = () => {
+        setEditingIndex(null);
+        setEditContent('');
+    };
+
+    const saveEdit = (index) => {
+        if (editContent.trim() && onEditSubmit) {
+            onEditSubmit(index, editContent);
+        }
+        setEditingIndex(null);
+    };
+
+    const handleCopy = (content) => {
+        navigator.clipboard.writeText(content);
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 2000);
+    };
+
     return (
         <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 no-scrollbar scroll-smooth transition-colors">
             <div className="max-w-4xl mx-auto space-y-8">
@@ -25,32 +53,50 @@ const MessageList = ({ messages = [], isLoading, user }) => {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="flex gap-4"
+                        className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : ''}`}
                     >
                         {msg.role === 'user' ? (
                             <>
-                                <UserAvatar user={user} size="md" className="ring-2 ring-white dark:ring-slate-800 shadow-sm" />
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="font-semibold text-slate-800 dark:text-slate-200">{user?.displayName || 'You'}</span>
-                                        <span className="text-xs text-slate-400 dark:text-slate-500">now</span>
+                                {editingIndex === index ? (
+                                    <div className="flex-1 flex flex-col items-end w-full">
+                                        <div className="bg-white dark:bg-[#1a1c23] border border-slate-200 dark:border-slate-700 w-full max-w-[85%] rounded-3xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
+                                            <textarea
+                                                value={editContent}
+                                                onChange={(e) => setEditContent(e.target.value)}
+                                                className="w-full bg-transparent text-slate-800 dark:text-slate-200 text-[15px] outline-none resize-none leading-relaxed"
+                                                rows={3}
+                                                autoFocus
+                                            />
+                                            <div className="flex justify-end gap-2 mt-3">
+                                                <button onClick={cancelEdit} className="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer">Cancel</button>
+                                                <button onClick={() => saveEdit(index)} className="px-4 py-2 text-xs font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition cursor-pointer shadow-sm">Save & Resend</button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 px-5 py-3.5 rounded-2xl rounded-tl-sm w-fit max-w-[85%] text-[15px] leading-relaxed shadow-sm border border-slate-100 dark:border-slate-700/50">
-                                        {msg.content}
+                                ) : (
+                                    <div className="flex-1 flex flex-col items-end group">
+                                        <div className="bg-indigo-600 text-white px-5 py-4 rounded-3xl w-fit max-w-[85%] text-[15px] leading-relaxed shadow-sm">
+                                            {msg.content}
+                                            <div className="text-[11px] text-indigo-200/80 text-right mt-1.5 flex items-center justify-end gap-1 select-none">
+                                                10:25
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L7 17l-5-5"></path><path d="M22 10l-7.5 7.5L13 16"></path></svg>
+                                            </div>
+                                        </div>
+                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 mt-2 mr-2 text-slate-400 dark:text-slate-500">
+                                            <button onClick={() => handleCopy(msg.content)} className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"><Copy className="w-4 h-4" /></button>
+                                            <button onClick={() => startEdit(index, msg.content)} className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"><Edit2 className="w-4 h-4" /></button>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
+                                <UserAvatar user={user} size="md" className="shrink-0 ring-2 ring-white dark:ring-slate-800 shadow-sm mt-1" />
                             </>
                         ) : (
                             <>
-                                <div className="w-10 h-10 rounded-full bg-[#E8E6FC] dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                                    <Settings2 className="w-5 h-5" />
+                                <div className="w-10 h-10 mt-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 font-bold text-sm shadow-sm border border-indigo-100 dark:border-indigo-800/50">
+                                    SL
                                 </div>
-                                <div className="flex-1 overflow-hidden">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="font-semibold text-slate-800 dark:text-slate-200">AI</span>
-                                        <span className="text-xs text-slate-400 dark:text-slate-500">now</span>
-                                    </div>
-                                    <div className="bg-slate-50 dark:bg-[#1a1c23] text-slate-700 dark:text-slate-300 p-6 rounded-2xl rounded-tl-sm w-full max-w-4xl text-[15px] leading-relaxed shadow-sm border border-slate-200/60 dark:border-slate-800/60 overflow-x-auto">
+                                <div className="flex-1 overflow-hidden group">
+                                    <div className="bg-white dark:bg-[#0f1117] text-slate-700 dark:text-slate-300 px-6 py-5 rounded-3xl w-full max-w-4xl text-[15px] leading-relaxed shadow-sm border border-slate-200 dark:border-slate-800 overflow-x-auto">
                                         <ReactMarkdown
                                             remarkPlugins={[remarkGfm]}
                                             components={{
@@ -61,7 +107,7 @@ const MessageList = ({ messages = [], isLoading, user }) => {
                                                             <div className="bg-slate-200 dark:bg-slate-800/80 px-4 py-2 text-xs text-slate-500 dark:text-slate-400 font-mono flex items-center justify-between border-b border-slate-300 dark:border-slate-700/50">
                                                                 <span>{match[1]}</span>
                                                                 <button
-                                                                    onClick={() => navigator.clipboard.writeText(String(children).replace(/\n$/, ''))}
+                                                                    onClick={() => handleCopy(String(children).replace(/\n$/, ''))}
                                                                     className="hover:text-slate-700 dark:hover:text-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer"
                                                                 >
                                                                     <Copy className="w-3.5 h-3.5" /> Copy
@@ -98,12 +144,14 @@ const MessageList = ({ messages = [], isLoading, user }) => {
                                         >
                                             {msg.content}
                                         </ReactMarkdown>
+                                        <div className="text-[11px] text-slate-400 dark:text-slate-500 text-right mt-3 flex items-center justify-end gap-1 select-none">
+                                            10:25
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L7 17l-5-5"></path><path d="M22 10l-7.5 7.5L13 16"></path></svg>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-4 text-slate-400 dark:text-slate-500 ml-1 mt-3">
-                                        <button className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><Volume2 className="w-4 h-4" /></button>
-                                        <button className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><Copy className="w-4 h-4" /></button>
-                                        <button className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><RotateCcw className="w-4 h-4" /></button>
-                                        <button className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><ThumbsDown className="w-4 h-4" /></button>
+                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 text-slate-400 dark:text-slate-500 ml-2 mt-2">
+                                        <button onClick={() => handleCopy(msg.content)} className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"><Copy className="w-4 h-4" /></button>
+                                        <button onClick={() => onReloadSubmit && onReloadSubmit(index)} className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"><RotateCcw className="w-4 h-4" /></button>
                                     </div>
                                 </div>
                             </>
@@ -117,14 +165,11 @@ const MessageList = ({ messages = [], isLoading, user }) => {
                         animate={{ opacity: 1, y: 0 }}
                         className="flex gap-4"
                     >
-                        <div className="w-10 h-10 rounded-full bg-[#E8E6FC] dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                            <Settings2 className="w-5 h-5 animate-spin" />
+                        <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 font-bold text-sm shadow-sm border border-indigo-100 dark:border-indigo-800/50">
+                            SL
                         </div>
                         <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className="font-semibold text-slate-800 dark:text-slate-200">AI</span>
-                            </div>
-                            <div className="bg-slate-50 dark:bg-[#1a1c23] text-slate-700 dark:text-slate-300 p-6 rounded-2xl rounded-tl-sm w-24 text-[15px] shadow-sm border border-slate-200/60 dark:border-slate-800/60 flex space-x-2">
+                            <div className="bg-white dark:bg-[#0f1117] p-6 rounded-3xl w-fit text-[15px] shadow-sm border border-slate-200 dark:border-slate-800 flex items-center space-x-2">
                                 <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
                                 <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                                 <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
@@ -135,6 +180,21 @@ const MessageList = ({ messages = [], isLoading, user }) => {
 
                 <div className="h-4"></div>
             </div>
+
+            {/* Copied Toast */}
+            <AnimatePresence>
+                {showToast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -50, x: "-50%" }}
+                        animate={{ opacity: 1, y: 0, x: "-50%" }}
+                        exit={{ opacity: 0, y: 50, x: "-50%" }}
+                        className="fixed top-30 left-1/2 -translateX-1/2 bg-slate-800 dark:bg-white text-white dark:text-slate-800 px-5 py-2.5 rounded-full text-sm font-medium shadow-xl z-[100] flex items-center gap-2 pointer-events-none"
+                    >
+                        <svg className="w-4 h-4 text-green-400 dark:text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                        Copied to clipboard!
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
