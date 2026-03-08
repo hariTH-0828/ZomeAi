@@ -16,7 +16,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import UserAvatar from '../common/UserAvatar';
 
-const MessageList = ({ messages = [], isLoading, user, onEditSubmit, onReloadSubmit }) => {
+const MessageList = ({ messages = [], isLoading, user, activeChat, onEditSubmit, onReloadSubmit }) => {
     const [editingIndex, setEditingIndex] = useState(null);
     const [editContent, setEditContent] = useState('');
     const [showToast, setShowToast] = useState(false);
@@ -45,8 +45,17 @@ const MessageList = ({ messages = [], isLoading, user, onEditSubmit, onReloadSub
     };
 
     return (
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 no-scrollbar scroll-smooth transition-colors">
-            <div className="max-w-4xl mx-auto space-y-8">
+        <div className="flex-1 overflow-y-auto w-full no-scrollbar relative">
+            <div className="max-w-4xl mx-auto w-full pb-32">
+                {/* Sticky Glassy Chat Title */}
+                {activeChat?.title && (
+                    <div className="flex justify-center w-full mt-3 mb-8">
+                        <div className="px-6 py-2.5 rounded-full bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/50 text-sm font-medium text-slate-600 dark:text-slate-300">
+                            {activeChat.title}
+                        </div>
+                    </div>
+                )}
+
                 {messages.map((msg, index) => (
                     <motion.div
                         key={index}
@@ -92,9 +101,6 @@ const MessageList = ({ messages = [], isLoading, user, onEditSubmit, onReloadSub
                             </>
                         ) : (
                             <>
-                                <div className="w-10 h-10 mt-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 font-bold text-sm shadow-sm border border-indigo-100 dark:border-indigo-800/50">
-                                    SL
-                                </div>
                                 <div className="flex-1 overflow-hidden group">
                                     <div className="bg-white dark:bg-[#0f1117] text-slate-700 dark:text-slate-300 px-6 py-5 rounded-3xl w-full max-w-4xl text-[15px] leading-relaxed shadow-sm border border-slate-200 dark:border-slate-800 overflow-x-auto">
                                         <ReactMarkdown
