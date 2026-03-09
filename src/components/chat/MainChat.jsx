@@ -16,11 +16,21 @@ const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setA
         const fetchInitialResponse = async () => {
             if (activeChat?.messages?.length === 1 && messages.length === 1 && !isLoading) {
                 setIsLoading(true);
+
+                // Pre-add empty assistant message for streaming
+                setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+
                 try {
                     const apiMessages = messages.map(m => ({ role: m.role, content: m.content }));
-                    const reply = await chatCompletion(apiMessages, activeModel);
+                    const reply = await chatCompletion(apiMessages, activeModel, (chunk) => {
+                        setMessages(prev => {
+                            const newMsgs = [...prev];
+                            newMsgs[newMsgs.length - 1] = { ...newMsgs[newMsgs.length - 1], content: chunk };
+                            return newMsgs;
+                        });
+                    });
+
                     const updatedMessages = [...messages, { role: 'assistant', content: reply }];
-                    setMessages(updatedMessages);
 
                     // Update global chat state
                     const updatedChat = { ...activeChat, messages: updatedMessages };
@@ -54,11 +64,12 @@ const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setA
 
     const handleSendMessage = async (text) => {
         const newUserMsg = { role: 'user', content: text };
-        const newMessages = [...messages, newUserMsg];
-        setMessages(newMessages);
+        // Immediately show user message + empty assistant placeholder for streaming
+        const streamMessages = [...messages, newUserMsg, { role: 'assistant', content: '' }];
+        setMessages(streamMessages);
         setIsLoading(true);
 
-        const updatedChatUser = { ...activeChat, messages: newMessages };
+        const updatedChatUser = { ...activeChat, messages: [...messages, newUserMsg] };
         setActiveChat(updatedChatUser);
 
         setHistoryItems(prev => {
@@ -70,9 +81,16 @@ const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setA
         });
 
         try {
-            const apiMessages = newMessages.map(m => ({ role: m.role, content: m.content }));
-            const reply = await chatCompletion(apiMessages, activeModel);
-            const finalMessages = [...newMessages, { role: 'assistant', content: reply }];
+            const apiMessages = [...messages, newUserMsg].map(m => ({ role: m.role, content: m.content }));
+            const reply = await chatCompletion(apiMessages, activeModel, (chunk) => {
+                setMessages(prev => {
+                    const newMsgs = [...prev];
+                    newMsgs[newMsgs.length - 1] = { ...newMsgs[newMsgs.length - 1], content: chunk };
+                    return newMsgs;
+                });
+            });
+
+            const finalMessages = [...messages, newUserMsg, { role: 'assistant', content: reply }];
             setMessages(finalMessages);
 
             const finalChat = { ...activeChat, messages: finalMessages };
@@ -102,9 +120,10 @@ const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setA
 
         if (editedMsg.role === 'user') {
             // Cut off history after this user message to resend
-            newMessages = messages.slice(0, index + 1);
-            newMessages[index] = editedMsg;
-            setMessages(newMessages);
+            const baseMessages = messages.slice(0, index);
+            const newMessages = [...baseMessages, editedMsg];
+            // Setup streaming state
+            setMessages([...newMessages, { role: 'assistant', content: '' }]);
             setIsLoading(true);
 
             // Update chat immediately
@@ -114,7 +133,14 @@ const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setA
 
             try {
                 const apiMessages = newMessages.map(m => ({ role: m.role, content: m.content }));
-                const reply = await chatCompletion(apiMessages, activeModel);
+                const reply = await chatCompletion(apiMessages, activeModel, (chunk) => {
+                    setMessages(prev => {
+                        const newMsgs = [...prev];
+                        newMsgs[newMsgs.length - 1] = { ...newMsgs[newMsgs.length - 1], content: chunk };
+                        return newMsgs;
+                    });
+                });
+
                 const finalMessages = [...newMessages, { role: 'assistant', content: reply }];
                 setMessages(finalMessages);
 
@@ -152,7 +178,8 @@ const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setA
         if (targetUserIndex < 0 || messages[targetUserIndex].role !== 'user') return;
 
         let newMessages = messages.slice(0, targetUserIndex + 1);
-        setMessages(newMessages);
+        // Add empty streaming placeholder
+        setMessages([...newMessages, { role: 'assistant', content: '' }]);
         setIsLoading(true);
 
         const updatedChatUser = { ...activeChat, messages: newMessages };
@@ -161,7 +188,14 @@ const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setA
 
         try {
             const apiMessages = newMessages.map(m => ({ role: m.role, content: m.content }));
-            const reply = await chatCompletion(apiMessages, activeModel);
+            const reply = await chatCompletion(apiMessages, activeModel, (chunk) => {
+                setMessages(prev => {
+                    const newMsgs = [...prev];
+                    newMsgs[newMsgs.length - 1] = { ...newMsgs[newMsgs.length - 1], content: chunk };
+                    return newMsgs;
+                });
+            });
+
             const finalMessages = [...newMessages, { role: 'assistant', content: reply }];
             setMessages(finalMessages);
 

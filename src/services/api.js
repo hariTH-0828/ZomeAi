@@ -21,11 +21,11 @@ const MODEL_ALIASES = {
 
 const ROUTER_SERVER_URL = "http://localhost:8000";
 
-export const chatCompletion = async (messages, activeModelAlias) => {
+export const chatCompletion = async (messages, activeModelAlias, onChunk) => {
     // If Arch-Router is selected, use the local Python server
     if (activeModelAlias === "Arch-Router (Auto)") {
         try {
-            const response = await fetch(`${ROUTER_SERVER_URL}/api/chat`, {
+            const response = await fetch(`${ROUTER_SERVER_URL}/api/chat_stream`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ messages }),
@@ -36,9 +36,43 @@ export const chatCompletion = async (messages, activeModelAlias) => {
                 throw new Error(error.detail || `Router server error: ${response.status}`);
             }
 
-            const data = await response.json();
-            // Prefix the response with routing info
-            return `> 🔀 Routed to **${data.routed_display_name}** (category: \`${data.route}\`)\n\n${data.content}`;
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let fullText = "";
+            let metadataPrefix = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const dataStr = line.slice(6);
+                        if (dataStr === '[DONE]') continue;
+
+                        try {
+                            const data = JSON.parse(dataStr);
+                            if (data.type === 'metadata') {
+                                metadataPrefix = `> 🔀 Routed to **${data.routed_display_name}** (category: \`${data.route}\`)\n\n`;
+                                fullText = metadataPrefix;
+                                if (onChunk) onChunk(fullText);
+                            } else if (data.type === 'chunk') {
+                                fullText += data.content;
+                                if (onChunk) onChunk(fullText);
+                            } else if (data.type === 'error') {
+                                throw new Error(data.error);
+                            }
+                        } catch (e) {
+                            // Incomplete JSON chunk or other parse error, ignore and continue reading
+                        }
+                    }
+                }
+            }
+
+            return fullText;
         } catch (error) {
             if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
                 throw new Error("Cannot connect to Arch-Router server. Make sure to start it with: cd server && python router_server.py");
@@ -56,9 +90,19 @@ export const chatCompletion = async (messages, activeModelAlias) => {
             model: actualModel,
             messages: messages,
             temperature: 0.7,
+            stream: true,
         });
 
-        return response.choices[0].message.content;
+        let fullText = "";
+        for await (const chunk of response) {
+            const content = chunk.choices[0]?.delta?.content || "";
+            if (content) {
+                fullText += content;
+                if (onChunk) onChunk(fullText);
+            }
+        }
+
+        return fullText;
     } catch (error) {
         console.error("OpenAI API Error:", error);
         throw error;

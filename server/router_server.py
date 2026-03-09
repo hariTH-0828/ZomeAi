@@ -11,13 +11,16 @@ Start with:
     python router_server.py
 """
 
+import asyncio
 import json
 import os
+import time
 from typing import Any, Dict, List, Optional
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from openai import OpenAI
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -200,6 +203,26 @@ def call_cloud_model(
 
     return response.choices[0].message.content
 
+def stream_cloud_model(
+    messages: List[Dict[str, str]], model_id: str
+):
+    """Forward the conversation to a HuggingFace cloud model and stream."""
+    client = OpenAI(
+        base_url="https://router.huggingface.co/v1",
+        api_key=HF_TOKEN,
+    )
+
+    response = client.chat.completions.create(
+        model=model_id,
+        messages=messages,
+        temperature=0.7,
+        stream=True
+    )
+
+    for chunk in response:
+        if chunk.choices and chunk.choices[0].delta.content:
+            yield chunk.choices[0].delta.content
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Request/Response Models
@@ -253,7 +276,7 @@ async def route_query(request: RouteRequest):
         raise HTTPException(status_code=503, detail="Model not loaded yet")
 
     conversation = [{"role": m.role, "content": m.content} for m in request.messages]
-    route = run_routing(conversation)
+    route = await asyncio.to_thread(run_routing, conversation)
 
     return RouteResponse(
         route=route,
@@ -271,17 +294,22 @@ async def chat(request: ChatRequest):
     conversation = [{"role": m.role, "content": m.content} for m in request.messages]
 
     # Step 1: Route the query
-    route = run_routing(conversation)
+    t0 = time.time()
+    route = await asyncio.to_thread(run_routing, conversation)
+    t1 = time.time()
     target_model = request.model_override or ROUTE_MODEL_MAP.get(
         route, ROUTE_MODEL_MAP["other"]
     )
     display_name = ROUTE_DISPLAY_MAP.get(route, ROUTE_DISPLAY_MAP["other"])
 
-    print(f"🔀 Route: {route} → {display_name} ({target_model})")
+    print(f"🔀 Route: {route} → {display_name} ({target_model}) [{t1-t0:.2f}s]")
 
     # Step 2: Forward to cloud model
     try:
-        content = call_cloud_model(conversation, target_model)
+        t2 = time.time()
+        content = await asyncio.to_thread(call_cloud_model, conversation, target_model)
+        t3 = time.time()
+        print(f"✅ Cloud response received [{t3-t2:.2f}s]")
     except Exception as e:
         raise HTTPException(
             status_code=502, detail=f"Cloud model error: {str(e)}"
@@ -293,6 +321,48 @@ async def chat(request: ChatRequest):
         routed_display_name=display_name,
         content=content,
     )
+
+
+@app.post("/api/chat_stream")
+async def chat_stream(request: ChatRequest):
+    """Route the query then stream the response using Server-Sent Events."""
+    if router_model is None:
+        raise HTTPException(status_code=503, detail="Model not loaded yet")
+
+    conversation = [{"role": m.role, "content": m.content} for m in request.messages]
+
+    # Pre-route synchronously since generator needs async wrapper
+    route = await asyncio.to_thread(run_routing, conversation)
+    target_model = request.model_override or ROUTE_MODEL_MAP.get(
+        route, ROUTE_MODEL_MAP["other"]
+    )
+    display_name = ROUTE_DISPLAY_MAP.get(route, ROUTE_DISPLAY_MAP["other"])
+
+    async def stream_generator():
+        # First send the routing metadata
+        meta = {
+            "type": "metadata",
+            "route": route,
+            "routed_model": target_model,
+            "routed_display_name": display_name
+        }
+        yield f"data: {json.dumps(meta)}\n\n"
+
+        # Then stream chunks from cloud model
+        try:
+            for text_chunk in stream_cloud_model(conversation, target_model):
+                chunk_data = {
+                    "type": "chunk",
+                    "content": text_chunk
+                }
+                yield f"data: {json.dumps(chunk_data)}\n\n"
+        except Exception as e:
+            error_data = {"type": "error", "error": str(e)}
+            yield f"data: {json.dumps(error_data)}\n\n"
+        
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(stream_generator(), media_type="text/event-stream")
 
 
 # ──────────────────────────────────────────────────────────────────────────────

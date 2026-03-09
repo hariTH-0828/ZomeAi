@@ -56,7 +56,12 @@ const MessageList = ({ messages = [], isLoading, user, activeChat, onEditSubmit,
                     </div>
                 )}
 
-                {messages.map((msg, index) => (
+                {messages.map((msg, index) => {
+                    // Skip rendering the empty assistant placeholder while loading (shimmer will show instead)
+                    if (isLoading && msg.role === 'assistant' && !msg.content && index === messages.length - 1) {
+                        return null;
+                    }
+                    return (
                     <motion.div
                         key={index}
                         initial={{ opacity: 0, y: 10 }}
@@ -163,19 +168,21 @@ const MessageList = ({ messages = [], isLoading, user, activeChat, onEditSubmit,
                             </>
                         )}
                     </motion.div>
-                ))}
+                    );
+                })}
 
-                {isLoading && (
+                {isLoading && !(messages.length > 0 && messages[messages.length - 1]?.role === 'assistant' && messages[messages.length - 1]?.content) && (
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="flex gap-4"
                     >
                         <div className="flex-1">
-                            <div className="bg-white dark:bg-[#0f1117] p-6 rounded-3xl w-fit text-[15px] shadow-sm border border-slate-200 dark:border-slate-800 flex items-center space-x-2">
-                                <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
-                                <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                            <div className="bg-white dark:bg-[#0f1117] p-6 rounded-3xl w-full max-w-4xl text-[15px] shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
+                                <div className="h-4 w-3/4 rounded-md bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
+                                <div className="h-4 w-full rounded-md bg-slate-200 dark:bg-slate-700 animate-pulse" style={{ animationDelay: '0.15s' }}></div>
+                                <div className="h-4 w-5/6 rounded-md bg-slate-200 dark:bg-slate-700 animate-pulse" style={{ animationDelay: '0.3s' }}></div>
+                                <div className="h-4 w-2/3 rounded-md bg-slate-200 dark:bg-slate-700 animate-pulse" style={{ animationDelay: '0.45s' }}></div>
                             </div>
                         </div>
                     </motion.div>
