@@ -184,7 +184,7 @@ const MainChat = ({ historyItems, setHistoryItems, activeChat, activeModel, setA
         <div className="flex flex-col h-full w-full bg-transparent relative transition-colors">
             <div className="flex-1 overflow-hidden flex flex-col relative z-0">
                 <MessageList messages={messages} isLoading={isLoading} user={user} activeChat={activeChat} onEditSubmit={handleEditMessage} onReloadSubmit={handleReloadMessage} />
-                <div className="shrink-0 relative z-10 w-full bg-gradient-to-t from-white via-white dark:from-[#0f1117] dark:via-[#0f1117] to-transparent pt-4">
+                <div className="shrink-0 relative z-10 w-full bg-white/70 dark:bg-[#0f1117]/70 backdrop-blur-xl">
                     <ChatInput onSend={handleSendMessage} isLoading={isLoading} />
                 </div>
             </div>

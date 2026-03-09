@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Paperclip, Mic, Send, Image as ImageIcon, Code2 } from 'lucide-react';
+import { Paperclip, Mic, Send, Image as ImageIcon, Code2, X, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ChatInput = ({ onSend, isLoading }) => {
     const [attachOpen, setAttachOpen] = useState(false);
     const [inputValue, setInputValue] = useState("");
+    const [attachedFiles, setAttachedFiles] = useState([]);
     const attachRef = useRef(null);
     const mediaInputRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -30,10 +31,27 @@ const ChatInput = ({ onSend, isLoading }) => {
         fileInputRef.current?.click();
     };
 
+    const handleFileSelect = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
+            setAttachedFiles(prev => [...prev, ...files]);
+        }
+        // Reset input so the same file can be selected again if removed
+        e.target.value = null;
+    };
+
+    const removeFile = (indexToRemove) => {
+        setAttachedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
+    };
+
     const handleSend = () => {
-        if (!inputValue.trim() || isLoading) return;
-        onSend(inputValue);
+        if ((!inputValue.trim() && attachedFiles.length === 0) || isLoading) return;
+
+        // Pass both text and files to parent (you'd need to handle files in MainChat, 
+        // but for now we just clear them on send to simulate it)
+        onSend(inputValue, attachedFiles);
         setInputValue("");
+        setAttachedFiles([]);
 
         // Reset textarea height after sending
         if (textareaRef.current) {
@@ -59,19 +77,50 @@ const ChatInput = ({ onSend, isLoading }) => {
     }, []);
 
     return (
-        <div className="p-4 bg-white dark:bg-[#0f1117] transition-colors">
+        <div className="p-3 transition-colors">
             <div className="max-w-4xl mx-auto">
                 <div className="relative flex flex-col bg-white dark:bg-[#1a1c23] border border-slate-200 dark:border-slate-700 shadow-[0_2px_15px_rgb(0,0,0,0.04)] dark:shadow-[0_2px_15px_rgb(0,0,0,0.2)] rounded-3xl p-3 transition-shadow focus-within:shadow-md focus-within:border-indigo-300 dark:focus-within:border-indigo-500">
 
                     {/* Hidden file inputs */}
-                    <input type="file" ref={mediaInputRef} className="hidden" accept="image/*,video/*" multiple />
-                    <input type="file" ref={fileInputRef} className="hidden" accept=".js,.jsx,.ts,.tsx,.json,.md,.html,.css,.py,.txt" multiple />
+                    <input type="file" ref={mediaInputRef} onChange={handleFileSelect} className="hidden" accept="image/*,video/*" multiple />
+                    <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".js,.jsx,.ts,.tsx,.json,.md,.html,.css,.py,.txt" multiple />
 
-                    <div className="flex items-start">
-                        <div className="relative mt-2 ml-2" ref={attachRef}>
+                    {/* Attached Files Preview */}
+                    {attachedFiles.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-2 p-2">
+                            {attachedFiles.map((file, index) => (
+                                <div key={index} className="flex items-center gap-3 bg-white dark:bg-[#0f1117] border border-slate-200 dark:border-slate-700 rounded-xl p-2 pr-3 shadow-sm group">
+                                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400">
+                                        {file.type.startsWith('image/') ? (
+                                            <ImageIcon className="w-5 h-5" />
+                                        ) : (
+                                            <FileText className="w-5 h-5" />
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col max-w-[150px]">
+                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
+                                            {file.name}
+                                        </span>
+                                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                                            {file.type ? file.type.split('/')[1]?.toUpperCase() || 'FILE' : 'FILE'}
+                                        </span>
+                                    </div>
+                                    <button
+                                        onClick={() => removeFile(index)}
+                                        className="ml-1 p-1 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors opacity-0 group-hover:opacity-100"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="flex items-center">
+                        <div className="relative ml-2" ref={attachRef}>
                             <button
                                 onClick={() => setAttachOpen(!attachOpen)}
-                                className={`transition-colors shrink-0 cursor-pointer ${attachOpen ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                                className={`transition-colors shrink-0 cursor-pointer p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center ${attachOpen ? 'text-indigo-600 dark:text-indigo-400 bg-slate-100 dark:bg-slate-800' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                             >
                                 <Paperclip className="w-5 h-5" />
                             </button>
@@ -115,9 +164,9 @@ const ChatInput = ({ onSend, isLoading }) => {
                             onKeyDown={handleKeyDown}
                             disabled={isLoading}
                             placeholder={isLoading ? "Generating response..." : "Message to zome ai..."}
-                            className="flex-1 bg-transparent px-3 py-1.5 ml-1 mt-0.5 text-slate-700 dark:text-slate-200 placeholder:text-slate-500 dark:placeholder:text-slate-500 focus:outline-none disabled:opacity-50 resize-none overflow-y-auto min-h-[44px] max-h-[200px] text-[15px] leading-relaxed no-scrollbar"
+                            className="flex-1 bg-transparent px-3 py-1.5 ml-1 text-slate-700 dark:text-slate-200 placeholder:text-slate-500 dark:placeholder:text-slate-500 focus:outline-none disabled:opacity-50 resize-none overflow-y-auto min-h-[44px] max-h-[200px] text-[15px] leading-relaxed no-scrollbar flex items-center"
                             rows={1}
-                            style={{ height: 'auto' }}
+                            style={{ height: 'auto', paddingTop: '11px' }}
                         />
                     </div>
 

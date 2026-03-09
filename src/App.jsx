@@ -9,7 +9,8 @@ import { loadChats } from './services/chatService';
 export const models = [
   "GPT-OSS (GROQ)",
   "Qwen 3.5",
-  "Kimi-K2.5"
+  "Kimi-K2.5",
+  "Arch-Router (Auto)"
 ];
 
 function App() {

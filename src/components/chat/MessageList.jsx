@@ -171,9 +171,6 @@ const MessageList = ({ messages = [], isLoading, user, activeChat, onEditSubmit,
                         animate={{ opacity: 1, y: 0 }}
                         className="flex gap-4"
                     >
-                        <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 font-bold text-sm shadow-sm border border-indigo-100 dark:border-indigo-800/50">
-                            SL
-                        </div>
                         <div className="flex-1">
                             <div className="bg-white dark:bg-[#0f1117] p-6 rounded-3xl w-fit text-[15px] shadow-sm border border-slate-200 dark:border-slate-800 flex items-center space-x-2">
                                 <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
@@ -191,10 +188,10 @@ const MessageList = ({ messages = [], isLoading, user, activeChat, onEditSubmit,
             <AnimatePresence>
                 {showToast && (
                     <motion.div
-                        initial={{ opacity: 0, y: -50, x: "-50%" }}
+                        initial={{ opacity: 0, y: -10, x: "-50%" }}
                         animate={{ opacity: 1, y: 0, x: "-50%" }}
-                        exit={{ opacity: 0, y: 50, x: "-50%" }}
-                        className="fixed top-30 left-1/2 -translateX-1/2 bg-slate-800 dark:bg-white text-white dark:text-slate-800 px-5 py-2.5 rounded-full text-sm font-medium shadow-xl z-[100] flex items-center gap-2 pointer-events-none"
+                        exit={{ opacity: 0, y: -10, x: "-50%" }}
+                        className="fixed top-20 left-1/2 -translate-x-1/2 bg-slate-800 dark:bg-white text-white dark:text-slate-800 px-5 py-2.5 rounded-full text-sm font-medium shadow-xl z-[100] flex items-center gap-2 pointer-events-none"
                     >
                         <svg className="w-4 h-4 text-green-400 dark:text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                         Copied to clipboard!
