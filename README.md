@@ -29,11 +29,18 @@ The frontend exposes the following user-friendly model aliases in the UI which m
    ```bash
    npm install
    ```
-3. Set up your environment variables. Create a `.env` file in the root of the project with your Hugging Face token:
+3. Set up your environment variables. Create a `.env` file in the root of the project:
    ```env
-   VITE_HF_TOKEN=your_token_here
+   VITE_HF_TOKEN=your_huggingface_token_here
+   VITE_FIREBASE_API_KEY=your_firebase_api_key
+   VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+   VITE_FIREBASE_PROJECT_ID=your_project_id
+   VITE_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
+   VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   VITE_FIREBASE_APP_ID=your_app_id
    ```
-   *Note: If deploying to a Node.js backend environment in the future, the app is also configured to read `HF_TOKEN` from the shell process.*
+   - Get your [Hugging Face Token](https://huggingface.co/settings/tokens)
+   - Get your Firebase config from the [Firebase Console](https://console.firebase.google.com/)
 
 4. Run the development server:
    ```bash
